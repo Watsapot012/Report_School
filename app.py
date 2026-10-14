@@ -222,6 +222,11 @@ def api_stats():
     })
 
 
+@app.route("/health")
+def health_check():
+    return "OK", 200
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html"), 404

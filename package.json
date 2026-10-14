@@ -4,12 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "python3 app.py",
-    "start": "python3 app.py",
-    "build": "python3 -c \"import py_compile; py_compile.compile('app.py'); py_compile.compile('models.py'); py_compile.compile('services.py'); py_compile.compile('database.py')\" && vite build",
+    "dev": "tsx server.ts",
+    "start": "node server.ts",
+    "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "python3 -c \"import py_compile; py_compile.compile('app.py'); py_compile.compile('models.py'); py_compile.compile('services.py'); py_compile.compile('database.py')\""
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
