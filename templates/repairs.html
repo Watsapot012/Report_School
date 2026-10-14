@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}รายการแจ้งซ่อมทั้งหมด{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h4 class="fw-bold mb-1 text-dark">รายการแจ้งซ่อมอุปกรณ์</h4>
+        <p class="text-muted mb-0 small">ค้นหา ติดตาม และบริหารจัดการใบแจ้งซ่อมอุปกรณ์ทั้งหมด</p>
+    </div>
+    <a href="{{ url_for('new_repair') }}" class="btn btn-primary btn-sm shadow-sm">
+        <i class="bi bi-plus-lg me-1"></i> แจ้งซ่อมใหม่
+    </a>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="card border-0 shadow-sm bg-white mb-4">
+    <div class="card-body p-3 p-lg-4">
+        <form method="GET" action="{{ url_for('repairs_list') }}" id="filterForm">
+            <div class="row g-2 align-items-center">
+                <!-- Search query -->
+                <div class="col-12 col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="q" class="form-control bg-light border-start-0" 
+                               placeholder="ค้นหาเลขที่ใบแจ้ง, รายละเอียด, อาคาร, ห้อง..." 
+                               value="{{ search_query }}">
+                        {% if search_query %}
+                        <a href="{{ url_for('repairs_list', status=current_status, problem_type=current_problem) }}" 
+                           class="btn btn-light border" title="ล้างคำค้นหา">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Status filter -->
+                <div class="col-6 col-md-3">
+                    <select name="status" class="form-select bg-light" onchange="this.form.submit()">
+                        <option value="ALL" {% if current_status == 'ALL' %}selected{% endif %}>สถานะทั้งหมด</option>
+                        {% for status in RequestStatus %}
+                        <option value="{{ status.value }}" {% if current_status == status.value %}selected{% endif %}>
+                            {{ STATUS_LABELS[status.value] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Problem type filter -->
+                <div class="col-6 col-md-3">
+                    <select name="problem_type" class="form-select bg-light" onchange="this.form.submit()">
+                        <option value="ALL" {% if current_problem == 'ALL' %}selected{% endif %}>ทุกประเภทปัญหา</option>
+                        {% for pt in ProblemType %}
+                        <option value="{{ pt.value }}" {% if current_problem == pt.value %}selected{% endif %}>
+                            {{ PROBLEM_LABELS[pt.value] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="col-12 col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Quick Status Pills -->
+        <div class="d-flex flex-wrap gap-2 mt-3 pt-3 border-top align-items-center">
+            <span class="extra-small text-muted me-1">ทางลัดสถานะ:</span>
+            <a href="{{ url_for('repairs_list', status='ALL', problem_type=current_problem, q=search_query) }}" 
+               class="btn btn-sm rounded-pill {% if current_status == 'ALL' %}btn-dark{% else %}btn-outline-secondary{% endif %} py-0 px-2 extra-small">
+               ทั้งหมด
+            </a>
+            <a href="{{ url_for('repairs_list', status='PENDING', problem_type=current_problem, q=search_query) }}" 
+               class="btn btn-sm rounded-pill {% if current_status == 'PENDING' %}btn-warning text-dark{% else %}btn-outline-warning text-dark{% endif %} py-0 px-2 extra-small">
+               รอดำเนินการ
+            </a>
+            <a href="{{ url_for('repairs_list', status='ACCEPTED', problem_type=current_problem, q=search_query) }}" 
+               class="btn btn-sm rounded-pill {% if current_status == 'ACCEPTED' %}btn-info text-dark{% else %}btn-outline-info text-dark{% endif %} py-0 px-2 extra-small">
+               รับงานแล้ว
+            </a>
+            <a href="{{ url_for('repairs_list', status='IN_PROGRESS', problem_type=current_problem, q=search_query) }}" 
+               class="btn btn-sm rounded-pill {% if current_status == 'IN_PROGRESS' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} py-0 px-2 extra-small">
+               กำลังซ่อม
+            </a>
+            <a href="{{ url_for('repairs_list', status='COMPLETED', problem_type=current_problem, q=search_query) }}" 
+               class="btn btn-sm rounded-pill {% if current_status == 'COMPLETED' %}btn-success text-white{% else %}btn-outline-success{% endif %} py-0 px-2 extra-small">
+               ซ่อมเสร็จสิ้น
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Table of Requests -->
+<div class="card border-0 shadow-sm bg-white">
+    <div class="card-header bg-white py-3 px-3 px-lg-4 d-flex justify-content-between align-items-center border-bottom">
+        <div>
+            <h6 class="fw-bold mb-0 text-dark">
+                ผลการค้นหา ({{ repairs | length }} รายการ)
+            </h6>
+        </div>
+        <div class="text-muted extra-small">
+            คลิกที่แถวหรือปุ่มเพื่อดูรายละเอียดและเปลี่ยนสถานะงาน
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        {% if repairs %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-secondary small">
+                    <tr>
+                        <th class="ps-3 ps-lg-4" style="width: 140px;">เลขที่ใบแจ้ง</th>
+                        <th>สถานที่</th>
+                        <th>ประเภทปัญหา / รายละเอียด</th>
+                        <th>ผู้แจ้งซ่อม</th>
+                        <th>ความเร่งด่วน</th>
+                        <th>ช่างผู้รับผิดชอบ</th>
+                        <th>สถานะ</th>
+                        <th class="text-end pe-3 pe-lg-4">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for repair in repairs %}
+                    <tr>
+                        <td class="ps-3 ps-lg-4">
+                            <a href="{{ url_for('repair_detail', repair_id=repair.id) }}" class="fw-bold text-decoration-none text-primary font-monospace">
+                                {{ repair.request_no }}
+                            </a>
+                            <div class="text-muted extra-small">{{ repair.created_at }}</div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ repair.building }}</div>
+                            <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ repair.room }}</div>
+                        </td>
+                        <td>
+                            <div>
+                                <span class="badge bg-light text-dark border me-1">
+                                    <i class="bi {{ repair.problem_type_icon }} me-1 text-primary"></i>
+                                    {{ repair.problem_type_label }}
+                                </span>
+                            </div>
+                            <div class="text-secondary small mt-1 text-truncate" style="max-width: 280px;" title="{{ repair.description }}">
+                                {{ repair.description }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="small fw-medium text-dark">{{ repair.user_id }}</div>
+                        </td>
+                        <td>
+                            <span class="badge {{ repair.urgency_badge_class }}">
+                                {{ repair.urgency_label }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if repair.assigned_to %}
+                            <div class="small fw-semibold text-dark">
+                                <i class="bi bi-person-badge text-primary me-1"></i>{{ repair.assigned_to }}
+                            </div>
+                            {% if repair.due_date %}
+                            <div class="text-muted extra-small">กำหนด: {{ repair.due_date }}</div>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-muted extra-small">- ยังไม่มอบหมาย -</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge {{ repair.status_badge_class }}">
+                                {{ repair.status_label }}
+                            </span>
+                        </td>
+                        <td class="text-end pe-3 pe-lg-4">
+                            <a href="{{ url_for('repair_detail', repair_id=repair.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-box-arrow-up-right me-1"></i> ดูงาน
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-3 text-muted">
+                <i class="bi bi-search fs-1"></i>
+            </div>
+            <h6 class="text-dark fw-bold">ไม่พบรายการแจ้งซ่อมที่ตรงกับเงื่อนไข</h6>
+            <p class="text-muted small">ลองเปลี่ยนคำค้นหา หรือรีเซ็ตตัวกรองเพื่อดูรายการทั้งหมด</p>
+            <a href="{{ url_for('repairs_list') }}" class="btn btn-outline-secondary btn-sm me-2">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> ล้างตัวกรองทั้งหมด
+            </a>
+            <a href="{{ url_for('new_repair') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> แจ้งซ่อมใหม่
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

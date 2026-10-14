@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}ไม่พบหน้าที่ต้องการ (404 Not Found){% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <div class="display-1 text-primary fw-bold mb-3">404</div>
+    <h4 class="fw-bold text-dark mb-2">ไม่พบหน้าที่คุณต้องการ</h4>
+    <p class="text-muted mb-4">หน้าที่คุณกำลังค้นหาอาจถูกย้าย ลบ หรือไม่มีอยู่ในระบบ</p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary px-4">
+        <i class="bi bi-house-door-fill me-1"></i> กลับหน้าหลัก
+    </a>
+</div>
+{% endblock %}

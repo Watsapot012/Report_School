@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}สร้างใบแจ้งซ่อมใหม่{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8 col-xl-7">
+        <div class="card border-0 shadow-sm bg-white">
+            <div class="card-header bg-white border-bottom py-3 px-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="fw-bold mb-1 text-dark">
+                            <i class="bi bi-file-earmark-plus-fill text-primary me-2"></i>แบบฟอร์มแจ้งซ่อมอุปกรณ์
+                        </h5>
+                        <p class="text-muted small mb-0">กรอกรายละเอียดเพื่อสร้างใบแจ้งซ่อม ระบบจะออกรหัสใบแจ้งซ่อม (RP-YYYYMM-XXX) ให้อัตโนมัติ</p>
+                    </div>
+                    <a href="{{ url_for('repairs_list') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i> ย้อนกลับ
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('new_repair') }}" id="newRepairForm" novalidate>
+                    <!-- Reporter Information -->
+                    <div class="mb-4">
+                        <label for="user_id" class="form-label fw-semibold text-dark">
+                            ชื่อผู้แจ้งซ่อม / รหัสเจ้าหน้าที่ <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-person-fill"></i></span>
+                            <input type="text" class="form-control" id="user_id" name="user_id" 
+                                   placeholder="เช่น ครูสมชาย ใจดี (กลุ่มสาระวิทยาศาสตร์), เจ้าหน้าที่ห้องสมุด" 
+                                   value="{{ form_data.get('user_id', '') }}" required>
+                        </div>
+                        <div class="form-text">ระบุชื่อ-นามสกุล และหน่วยงานหรือตำแหน่งของผู้แจ้ง</div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <!-- Building -->
+                        <div class="col-12 col-md-6">
+                            <label for="building" class="form-label fw-semibold text-dark">
+                                อาคาร / สถานที่ <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-building"></i></span>
+                                <input type="text" class="form-control" id="building" name="building" 
+                                       list="buildingOptions" placeholder="เลือกหรือพิมพ์ชื่ออาคาร" 
+                                       value="{{ form_data.get('building', '') }}" required>
+                                <datalist id="buildingOptions">
+                                    <option value="อาคาร 1 (อาคารอำนวยการและธุรการ)">
+                                    <option value="อาคาร 2 (อาคารมัธยมต้น)">
+                                    <option value="อาคาร 3 (ศูนย์วิทยาศาสตร์และเทคโนโลยี)">
+                                    <option value="อาคาร 4 (ศูนย์คอมพิวเตอร์และสารสนเทศ)">
+                                    <option value="อาคาร 5 (หอประชุมและโรงยิมเนเซียม)">
+                                    <option value="อาคาร 6 (โรงอาหารกลาง)">
+                                    <option value="อาคาร 7 (หอสมุดเฉลิมพระเกียรติ)">
+                                </datalist>
+                            </div>
+                        </div>
+
+                        <!-- Room -->
+                        <div class="col-12 col-md-6">
+                            <label for="room" class="form-label fw-semibold text-dark">
+                                ห้อง / จุดที่พบปัญหา <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-geo-alt-fill"></i></span>
+                                <input type="text" class="form-control" id="room" name="room" 
+                                       placeholder="เช่น ห้อง 401, ห้องพักครู, ทางเดินชั้น 2" 
+                                       value="{{ form_data.get('room', '') }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <!-- Problem Type -->
+                        <div class="col-12 col-md-6">
+                            <label for="problem_type" class="form-label fw-semibold text-dark">
+                                ประเภทของปัญหา / อุปกรณ์ <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="problem_type" name="problem_type" required>
+                                {% for pt in ProblemType %}
+                                <option value="{{ pt.value }}" {% if form_data.get('problem_type') == pt.value %}selected{% endif %}>
+                                    {{ PROBLEM_LABELS[pt.value] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">เลือกหมวดหมู่ที่ตรงกับอุปกรณ์ที่ชำรุดมากที่สุด</div>
+                        </div>
+
+                        <!-- Urgency -->
+                        <div class="col-12 col-md-6">
+                            <label for="urgency" class="form-label fw-semibold text-dark">
+                                ระดับความเร่งด่วน <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="urgency" name="urgency" required>
+                                {% for u in UrgencyLevel %}
+                                <option value="{{ u.value }}" {% if form_data.get('urgency') == u.value %}selected{% elif not form_data.get('urgency') and u.value == 'NORMAL' %}selected{% endif %}>
+                                    {{ URGENCY_LABELS[u.value] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">หากมีผลกระทบต่อการเรียนการสอนโดยตรง ให้เลือก "ด่วน" หรือ "ด่วนที่สุด"</div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label fw-semibold text-dark">
+                            รายละเอียดปัญหาและอาการชำรุด <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="4" 
+                                  placeholder="อธิบายอาการเสีย สภาพความเสียหาย หรืออุปกรณ์ที่ต้องการให้ซ่อมแซมอย่างชัดเจน..." required>{{ form_data.get('description', '') }}</textarea>
+                        <div class="form-text">ระบุรายละเอียดอย่างชัดเจนเพื่อช่วยให้ช่างเตรียมเครื่องมือและอะไหล่ได้ตรงจุด</div>
+                    </div>
+
+                    <!-- Notice Card -->
+                    <div class="alert alert-info border-0 bg-info bg-opacity-10 mb-4 d-flex align-items-start gap-2">
+                        <i class="bi bi-info-circle-fill text-info mt-1"></i>
+                        <div class="small">
+                            <strong>กระบวนการดำเนินงานตามหลัก OOP:</strong> เมื่อกดส่งคำขอ ระบบจะสร้างอินสแตนซ์ <code>RepairRequest</code> ในสถานะ <code>PENDING (รอดำเนินการ)</code> และบันทึกข้อมูลอย่างปลอดภัยด้วย Parameterized Queries
+                        </div>
+                    </div>
+
+                    <!-- Submit & Cancel Buttons -->
+                    <div class="d-flex align-items-center justify-content-end gap-2 pt-2 border-top">
+                        <a href="{{ url_for('repairs_list') }}" class="btn btn-light px-4">ยกเลิก</a>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm" id="btnSubmitRepair">
+                            <i class="bi bi-send-fill me-1"></i> ยืนยันบันทึกใบแจ้งซ่อม
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

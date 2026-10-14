@@ -1,0 +1,6 @@
+{
+  "name": "ระบบแจ้งซ่อมอุปกรณ์",
+  "description": "ระบบแจ้งซ่อมอุปกรณ์โรงเรียน พัฒนาด้วย Python Flask และ SQLite ตามหลัก OOP",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

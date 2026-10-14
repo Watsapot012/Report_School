@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}แดชบอร์ดภาพรวมระบบแจ้งซ่อม{% endblock %}
+
+{% block content %}
+<div class="dashboard-header mb-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h4 class="fw-bold mb-1 text-dark">แดชบอร์ดภาพรวมงานซ่อมบำรุง</h4>
+        <p class="text-muted mb-0 small">ติดตามสถานะและสรุปผลการดำเนินงานแจ้งซ่อมอุปกรณ์ทั้งหมดภายในโรงเรียน</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{{ url_for('repairs_list') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-list-ul me-1"></i> ดูรายการทั้งหมด
+        </a>
+        <a href="{{ url_for('new_repair') }}" class="btn btn-primary btn-sm shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> สร้างใบแจ้งซ่อมใหม่
+        </a>
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <!-- Total Requests -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card stat-card card-total h-100 border-0 shadow-sm">
+            <div class="card-body p-3 p-lg-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-medium">งานแจ้งซ่อมทั้งหมด</span>
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-collection-fill"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-1 text-dark">{{ stats.total }}</h2>
+                <div class="d-flex align-items-center text-muted extra-small">
+                    <span class="text-success fw-semibold me-1"><i class="bi bi-arrow-up-right"></i> ทุกรายการ</span>
+                    <span>บันทึกในฐานข้อมูล</span>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3 px-lg-4">
+                <a href="{{ url_for('repairs_list', status='ALL') }}" class="small text-decoration-none d-flex align-items-center text-primary">
+                    <span>ดูรายละเอียด</span>
+                    <i class="bi bi-chevron-right ms-1 extra-small"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card stat-card card-pending h-100 border-0 shadow-sm">
+            <div class="card-body p-3 p-lg-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-medium">งานรอดำเนินการ</span>
+                    <div class="stat-icon bg-warning bg-opacity-15 text-warning-emphasis">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-1 text-warning-emphasis">{{ stats.pending }}</h2>
+                <div class="d-flex align-items-center text-muted extra-small">
+                    <span class="badge bg-warning text-dark me-1">PENDING</span>
+                    <span>รอเจ้าหน้าที่รับงาน</span>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3 px-lg-4">
+                <a href="{{ url_for('repairs_list', status='PENDING') }}" class="small text-decoration-none d-flex align-items-center text-warning-emphasis">
+                    <span>จัดการรับงาน</span>
+                    <i class="bi bi-chevron-right ms-1 extra-small"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- In Progress Requests -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card stat-card card-in-progress h-100 border-0 shadow-sm">
+            <div class="card-body p-3 p-lg-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-medium">งานกำลังซ่อม</span>
+                    <div class="stat-icon bg-info bg-opacity-15 text-info">
+                        <i class="bi bi-gear-fill"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-1 text-info">{{ stats.in_progress }}</h2>
+                <div class="d-flex align-items-center text-muted extra-small">
+                    <span class="badge bg-info text-dark me-1">IN_PROGRESS</span>
+                    <span>รวมรับงานแล้ว {{ stats.accepted }} งาน</span>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3 px-lg-4">
+                <a href="{{ url_for('repairs_list', status='IN_PROGRESS') }}" class="small text-decoration-none d-flex align-items-center text-info">
+                    <span>ดูงานที่กำลังทำ</span>
+                    <i class="bi bi-chevron-right ms-1 extra-small"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Requests -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card stat-card card-completed h-100 border-0 shadow-sm">
+            <div class="card-body p-3 p-lg-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-medium">งานซ่อมเสร็จสิ้น</span>
+                    <div class="stat-icon bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-1 text-success">{{ stats.completed }}</h2>
+                <div class="d-flex align-items-center text-muted extra-small">
+                    <span class="badge bg-success me-1">COMPLETED</span>
+                    <span>ปิดงานเรียบร้อยแล้ว</span>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3 px-lg-4">
+                <a href="{{ url_for('repairs_list', status='COMPLETED') }}" class="small text-decoration-none d-flex align-items-center text-success">
+                    <span>ดูประวัติที่ซ่อมเสร็จ</span>
+                    <i class="bi bi-chevron-right ms-1 extra-small"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Extra Stats Banner & OOP Highlights -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow-sm bg-primary text-white p-4 h-100 rounded-3 position-relative overflow-hidden">
+            <div class="position-absolute end-0 bottom-0 opacity-10 p-3 pointer-events-none">
+                <i class="bi bi-wrench-adjustable" style="font-size: 10rem;"></i>
+            </div>
+            <div class="position-relative" style="z-index: 2;">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary fw-bold">ฝ่ายอาคารสถานที่และซ่อมบำรุง</span>
+                    {% if stats.urgent_count > 0 %}
+                    <span class="badge bg-danger text-white"><i class="bi bi-fire me-1"></i> มีงานด่วน {{ stats.urgent_count }} รายการ</span>
+                    {% endif %}
+                </div>
+                <h4 class="fw-bold mb-2">พบอุปกรณ์หรือสิ่งอำนวยความสะดวกชำรุดเสียหาย?</h4>
+                <p class="mb-3 text-white-50 small pe-lg-5">
+                    แจ้งซ่อมได้ทันทีผ่านระบบออนไลน์ พร้อมระบุอาคาร ห้อง และอาการชำรุด เพื่อให้ทีมช่างเข้าตรวจสอบและแก้ไขปัญหาได้อย่างรวดเร็ว
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('new_repair') }}" class="btn btn-light text-primary fw-semibold shadow-sm px-4">
+                        <i class="bi bi-plus-circle-fill me-1"></i> แจ้งซ่อมอุปกรณ์ทันที
+                    </a>
+                    <a href="{{ url_for('repairs_list') }}" class="btn btn-outline-light px-3">
+                        <i class="bi bi-search me-1"></i> ค้นหาใบแจ้งซ่อม
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm h-100 bg-white">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="fw-bold text-dark mb-0">งบประมาณค่าซ่อมบำรุง</h6>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary">สะสม</span>
+                    </div>
+                    <div class="p-3 bg-light rounded-3 mb-3 text-center">
+                        <span class="text-muted extra-small d-block mb-1">ค่าใช้จ่ายงานซ่อมที่ปิดงานแล้ว</span>
+                        <h3 class="fw-bold text-primary mb-0">{{ stats.total_cost | currency }} <span class="fs-6 fw-normal text-muted">บาท</span></h3>
+                    </div>
+                </div>
+                <div class="small text-muted border-top pt-2">
+                    <div class="d-flex justify-content-between py-1">
+                        <span>งานรอรับงาน:</span>
+                        <strong class="text-warning-emphasis">{{ stats.pending }} งาน</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span>งานที่รับงานแล้ว:</span>
+                        <strong class="text-info">{{ stats.accepted }} งาน</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span>งานที่กำลังซ่อม:</span>
+                        <strong class="text-primary">{{ stats.in_progress }} งาน</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Requests Section -->
+<div class="card border-0 shadow-sm bg-white mb-4">
+    <div class="card-header bg-white border-bottom py-3 px-3 px-lg-4 d-flex align-items-center justify-content-between">
+        <div>
+            <h6 class="fw-bold text-dark mb-0">
+                <i class="bi bi-clock-history text-primary me-2"></i>รายการแจ้งซ่อมล่าสุด
+            </h6>
+            <small class="text-muted">รายการแจ้งซ่อมที่ได้รับการบันทึกล่าสุดในระบบ</small>
+        </div>
+        <a href="{{ url_for('repairs_list') }}" class="btn btn-sm btn-outline-primary">
+            ดูทั้งหมด ({{ stats.total }})
+        </a>
+    </div>
+
+    <div class="card-body p-0">
+        {% if stats.recent_repairs %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-secondary small">
+                    <tr>
+                        <th class="ps-3 ps-lg-4" style="width: 150px;">เลขที่ใบแจ้ง</th>
+                        <th>สถานที่ / ห้อง</th>
+                        <th>ประเภทปัญหา</th>
+                        <th>ผู้แจ้งซ่อม</th>
+                        <th>ความเร่งด่วน</th>
+                        <th>สถานะ</th>
+                        <th class="text-end pe-3 pe-lg-4">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in stats.recent_repairs %}
+                    <tr>
+                        <td class="ps-3 ps-lg-4">
+                            <a href="{{ url_for('repair_detail', repair_id=item.id) }}" class="fw-bold text-decoration-none text-primary">
+                                {{ item.request_no }}
+                            </a>
+                            <div class="text-muted extra-small">{{ item.created_at }}</div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ item.building }}</div>
+                            <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ item.room }}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">
+                                <i class="bi {{ item.problem_type_icon }} me-1 text-primary"></i>
+                                {{ item.problem_type_label }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="small fw-medium text-dark">{{ item.user_id }}</div>
+                        </td>
+                        <td>
+                            <span class="badge {{ item.urgency_badge_class }}">
+                                {{ item.urgency_label }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {{ item.status_badge_class }}">
+                                {{ item.status_label }}
+                            </span>
+                        </td>
+                        <td class="text-end pe-3 pe-lg-4">
+                            <a href="{{ url_for('repair_detail', repair_id=item.id) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-eye me-1"></i> รายละเอียด
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-3 text-muted">
+                <i class="bi bi-inbox fs-1"></i>
+            </div>
+            <h6 class="text-dark fw-bold">ยังไม่มีรายการแจ้งซ่อม</h6>
+            <p class="text-muted small">เริ่มต้นสร้างใบแจ้งซ่อมรายการแรกได้ทันที</p>
+            <a href="{{ url_for('new_repair') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> แจ้งซ่อมใหม่
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- OOP Architecture Info Box -->
+<div class="card border-0 shadow-sm bg-light">
+    <div class="card-body p-3 p-lg-4">
+        <h6 class="fw-bold text-dark d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-diagram-3-fill text-primary"></i>
+            สถาปัตยกรรมเชิงวัตถุ (OOP Architecture) และ State Transition ภายในระบบ
+        </h6>
+        <div class="row g-3 small text-muted">
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded border">
+                    <strong class="text-dark d-block mb-1">1. Class RepairRequest</strong>
+                    <span>รับผิดชอบ Encapsulation ของข้อมูลใบแจ้งซ่อม และมี Method ควบคุมสถานะ: <code>assign_to()</code>, <code>start_repair()</code>, <code>complete_repair()</code></span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded border">
+                    <strong class="text-dark d-block mb-1">2. Class RepairService</strong>
+                    <span>สร้างเลขใบแจ้งซ่อมอัตโนมัติ <code>RP-YYYYMM-XXX</code> ด้วย <code>datetime</code> และ <code>zfill()</code> พร้อมเชื่อมโยงกับ Object RepairRequest</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded border">
+                    <strong class="text-dark d-block mb-1">3. Class DatabaseManager</strong>
+                    <span>จัดการ SQLite ด้วย Parameterized Queries ป้องกัน SQL Injection, จัดการ Connection ปลอดภัย และเปิดใช้งาน Foreign Keys</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
